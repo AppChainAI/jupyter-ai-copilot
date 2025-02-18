@@ -1,0 +1,29 @@
+services:
+  jupyter-ai-agent:
+    build:
+      context: .
+      dockerfile: ./jupyter_ai_agent/Dockerfile
+    image: jupyter-ai-agent:0.1
+    container_name: jupyter-ai-agent
+    ports:
+      - "8000:8000"  # FastAPI 服务端口
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_BASE=${OPENAI_API_BASE}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./notebooks:/app/notebooks
+    networks:
+      - jupyter-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  jupyter-network:
+    name: jupyter-network
+    external: true
