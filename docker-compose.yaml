@@ -2,7 +2,7 @@ services:
   jupyter-ai-agent:
     build:
       context: .
-      dockerfile: ./jupyter_ai_agent/Dockerfile
+      dockerfile: ./jupyter_ai_agent
     image: jupyter-ai-agent:0.1
     container_name: jupyter-ai-agent
     ports:
@@ -18,6 +18,28 @@ services:
       - jupyter-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  jupyter-ai-extensions:
+    build: ./jupyter_ai_extensions
+    image: jupyter-ai-extensions:0.1
+    env_file:
+      - .env
+    container_name: jupyter-ai-extensions
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
+      - AI_AGENT_URL=${AI_AGENT_URL}
+    volumes:
+      - ./notebooks:/app/notebooks
+    networks:
+      - jupyter-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888"]
       interval: 30s
       timeout: 10s
       retries: 3

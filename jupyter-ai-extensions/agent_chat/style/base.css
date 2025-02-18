@@ -1,0 +1,55 @@
+/*
+    See the JupyterLab Developer Guide for useful CSS Patterns:
+
+    https://jupyterlab.readthedocs.io/en/stable/developer/css.html
+*/
+
+.jp-sidebar-widget {
+    padding: 16px;
+    background: var(--jp-layout-color1);
+    height: 100%;
+    border-left: 1px solid var(--jp-border-color1);
+}
+
+.jp-SideBar-tabIcon {
+    /* 重置默认样式 */
+    all: unset;
+    
+    /* 使用 SVG 内容作为背景 */
+    background: currentColor !important;
+    -webkit-mask: url('../icons/chat.svg') no-repeat center !important;
+    mask: url('../icons/chat.svg') no-repeat center !important;
+    -webkit-mask-size: 16px !important;
+    mask-size: 16px !important;
+    
+    /* 设置容器尺寸和定位 */
+    display: block !important;
+    width: 16px !important;
+    height: 16px !important;
+    
+    /* 水平和垂直居中定位 */
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    
+    /* 移除边距，因为现在使用绝对定位居中 */
+    margin: 0 !important;
+}
+
+.jp-sidebar-button {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0;
+    background: var(--jp-brand-color1);
+    color: white;
+    border: none;
+    border-radius: var(--jp-border-radius);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: var(--jp-ui-font-family);
+}
+
+.jp-sidebar-button:hover {
+    background: var(--jp-brand-color0);
+}
