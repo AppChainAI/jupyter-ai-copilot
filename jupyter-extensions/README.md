@@ -1,11 +1,5 @@
 # jupyter-ai-extends
 
-## 进入虚拟环境
-
-```bash
-conda activate jupyter-ai-ext
-```
-
 ## 安装扩展
 
 ```bash
