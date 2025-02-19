@@ -4,6 +4,7 @@ import { INotebookTracker } from '@jupyterlab/notebook';
 import { PageConfig } from '@jupyterlab/coreutils';
 import MarkdownIt from 'markdown-it';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { InputAreaWidget } from './InputAreaWidget';
 
 interface IChatMessage {
   role: 'user' | 'assistant';
@@ -12,9 +13,7 @@ interface IChatMessage {
 
 export class SidebarWidget extends LuminoWidget {
   private _messageContainer: HTMLDivElement;
-  private _inputContainer: HTMLDivElement;
-  private _input: HTMLTextAreaElement;
-  private _sendButton: HTMLButtonElement;
+  private _inputArea: InputAreaWidget;
   private _messages: IChatMessage[] = [];
   private _notebookTracker: INotebookTracker;
   private _md: MarkdownIt;
@@ -44,41 +43,12 @@ export class SidebarWidget extends LuminoWidget {
       flex: '1 1 auto'
     });
 
-    // 创建固定底部的输入区域容器
-    this._inputContainer = document.createElement('div');
-    this._inputContainer.className = 'jp-sidebar-input-container';
-    Object.assign(this._inputContainer.style, {
-      position: 'fixed',
-      bottom: '0',
-      left: '0',
-      right: '0',
-      background: 'var(--jp-layout-color1)',
-      padding: '16px',
-      borderTop: '1px solid var(--jp-border-color1)'
-    });
-
-    // 创建文本输入框
-    this._input = document.createElement('textarea');
-    this._input.className = 'jp-sidebar-input';
-    this._input.placeholder = '输入消息...';
-    this._input.rows = 3;
-
-    // 创建发送按钮
-    this._sendButton = document.createElement('button');
-    this._sendButton.className = 'jp-sidebar-send-button';
-    this._sendButton.innerHTML = '发送';
-    Object.assign(this._sendButton.style, {
-      transition: 'background-color 0.3s ease',
-      cursor: 'pointer'
-    });
-    this._sendButton.onclick = () => this._handleSend();
-
-    // 组装界面
-    this._inputContainer.appendChild(this._input);
-    this._inputContainer.appendChild(this._sendButton);
-
+    // 创建输入区域组件
+    this._inputArea = new InputAreaWidget((content: string) => this.handleSendRequest(content));
+    
+    // 调整界面组装
     this.node.appendChild(this._messageContainer);
-    this.node.appendChild(this._inputContainer);
+    this.node.appendChild(this._inputArea.node); // 使用组件的 node 属性
 
     // 添加示例消息
     this._addMessage({
@@ -95,8 +65,7 @@ export class SidebarWidget extends LuminoWidget {
     console.log('AI_AGENT_URL:', PageConfig.getOption('AI_AGENT_URL'));
   }
 
-  private async _handleSend(): Promise<void> {
-    const content = this._input.value.trim();
+  private async handleSendRequest(content: string): Promise<void> {
     if (!content) {
       return;
     }
@@ -108,10 +77,7 @@ export class SidebarWidget extends LuminoWidget {
     });
 
     // 清空输入框
-    this._input.value = '';
-
-    // 禁用发送按钮
-    this._sendButton.disabled = true;
+    this._inputArea.enableSendButton();
 
     // 在流式请求开始前，先不创建消息元素
     let tempMessage: HTMLElement | null = null;
@@ -198,7 +164,7 @@ export class SidebarWidget extends LuminoWidget {
         },
         onclose: () => {
           // 连接关闭时恢复按钮状态
-          this._sendButton.disabled = false;
+          this._inputArea.enableSendButton();
           handleStreamEnd();
         },
         onmessage: ev => {
@@ -259,7 +225,7 @@ export class SidebarWidget extends LuminoWidget {
       handleStreamError();
     } finally {
       // 保留 finally 作为最后的安全保障
-      this._sendButton.disabled = false;
+      this._inputArea.enableSendButton();
     }
   }
 
