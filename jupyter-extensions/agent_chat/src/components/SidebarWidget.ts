@@ -5,11 +5,13 @@ import { PageConfig } from '@jupyterlab/coreutils';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { InputAreaWidget } from './InputAreaWidget';
 import { MessageContainerWidget } from './MessageContainerWidget';
+import MarkdownIt from 'markdown-it';
 
 export class SidebarWidget extends LuminoWidget {
   private _messageContainer: MessageContainerWidget;
   private _inputArea: InputAreaWidget;
   private _notebookTracker: INotebookTracker;
+  private _md: MarkdownIt;
 
   constructor(labShell: ILabShell, notebookTracker: INotebookTracker) {
     super();
@@ -39,6 +41,13 @@ export class SidebarWidget extends LuminoWidget {
 
     // 添加调试代码查看所有配置
     console.log('AI_AGENT_URL:', PageConfig.getOption('AI_AGENT_URL'));
+
+    // 初始化markdown-it
+    this._md = new MarkdownIt({
+      html: true,
+      linkify: true,
+      typographer: true
+    });
   }
 
   private async handleSendRequest(content: string): Promise<void> {
