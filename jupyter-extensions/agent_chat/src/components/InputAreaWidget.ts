@@ -1,4 +1,5 @@
 import { Widget as LuminoWidget } from '@lumino/widgets';
+import { IconWidget } from './IconWidget';
 
 export class InputAreaWidget extends LuminoWidget {
   private _input: HTMLTextAreaElement;
@@ -23,7 +24,7 @@ export class InputAreaWidget extends LuminoWidget {
     const inputContainer = document.createElement('div');
     this._input = document.createElement('textarea');
     this._input.className = 'jp-sidebar-input';
-    this._input.placeholder = '输入消息 222...';
+    this._input.placeholder = '输入消息...';
     this._input.rows = 3;
     Object.assign(this._input.style, {
       width: '100%',
@@ -40,14 +41,33 @@ export class InputAreaWidget extends LuminoWidget {
 
     this._sendButton = document.createElement('button');
     this._sendButton.className = 'jp-sidebar-send-button';
-    this._sendButton.innerHTML = '发送';
+
+    // 使用图标组件
+    const sendIcon = IconWidget.createSendIcon();
+    this._sendButton.appendChild(sendIcon.node);
+
     Object.assign(this._sendButton.style, {
       transition: 'background-color 0.3s ease',
       cursor: 'pointer',
-      padding: '8px 16px'
+      padding: '6px',  // 调整内边距
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '4px',
+      backgroundColor: 'var(--jp-brand-color1)',
+      border: 'none'
     });
+    
     this._sendButton.onclick = () => this.handleSend();
     buttonContainer.appendChild(this._sendButton);
+
+    // 添加悬停效果
+    this._sendButton.onmouseenter = () => {
+      this._sendButton.style.backgroundColor = 'var(--jp-brand-color2)';
+    };
+    this._sendButton.onmouseleave = () => {
+      this._sendButton.style.backgroundColor = 'var(--jp-brand-color1)';
+    };
 
     // 组装界面
     container.appendChild(inputContainer);
