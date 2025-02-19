@@ -2,61 +2,37 @@ import { Widget as LuminoWidget } from '@lumino/widgets';
 import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { PageConfig } from '@jupyterlab/coreutils';
-import MarkdownIt from 'markdown-it';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { InputAreaWidget } from './InputAreaWidget';
-
-interface IChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { MessageContainerWidget } from './MessageContainerWidget';
 
 export class SidebarWidget extends LuminoWidget {
-  private _messageContainer: HTMLDivElement;
+  private _messageContainer: MessageContainerWidget;
   private _inputArea: InputAreaWidget;
-  private _messages: IChatMessage[] = [];
   private _notebookTracker: INotebookTracker;
-  private _md: MarkdownIt;
 
   constructor(labShell: ILabShell, notebookTracker: INotebookTracker) {
     super();
     this._notebookTracker = notebookTracker;
     this.addClass('jp-sidebar-widget');
 
-    // 初始化 markdown-it
-    this._md = new MarkdownIt({
-      html: true,
-      linkify: true,
-      typographer: true,
-      // 添加代码高亮支持
-      highlight: function (str, lang) {
-        return `<pre class="jp-RenderedText jp-mod-${lang}"><code>${str}</code></pre>`;
-      }
-    });
-
-    // 创建消息容器（添加底部内边距防止内容被输入框遮挡）
-    this._messageContainer = document.createElement('div');
-    this._messageContainer.className = 'jp-sidebar-messages';
-    Object.assign(this._messageContainer.style, {
-      paddingBottom: '120px',
-      overflowY: 'auto',
-      flex: '1 1 auto'
-    });
+    // 创建消息容器组件
+    this._messageContainer = new MessageContainerWidget();
 
     // 创建输入区域组件
     this._inputArea = new InputAreaWidget((content: string) => this.handleSendRequest(content));
-    
-    // 调整界面组装
-    this.node.appendChild(this._messageContainer);
-    this.node.appendChild(this._inputArea.node); // 使用组件的 node 属性
+
+    // 组装界面
+    this.node.appendChild(this._messageContainer.node);
+    this.node.appendChild(this._inputArea.node);
 
     // 添加示例消息
-    this._addMessage({
+    this._messageContainer.addMessage({
       role: 'assistant',
       content: '你好！我是你的 AI 助手，有什么我可以帮你的吗？'
     });
 
-    // 调整容器高度以适应固定定位
+    // 容器样式设置
     this.node.style.height = '100vh';
     this.node.style.display = 'flex';
     this.node.style.flexDirection = 'column';
@@ -71,7 +47,7 @@ export class SidebarWidget extends LuminoWidget {
     }
 
     // 添加用户消息
-    this._addMessage({
+    this._messageContainer.addMessage({
       role: 'user',
       content: content
     });
@@ -117,7 +93,7 @@ export class SidebarWidget extends LuminoWidget {
       const content = document.createElement('div');
       content.className = 'jp-sidebar-message-content';
       element.appendChild(content);
-      this._messageContainer.appendChild(element);
+      this._messageContainer.node.appendChild(element);
       return element;
     };
 
@@ -193,7 +169,7 @@ export class SidebarWidget extends LuminoWidget {
             }
 
             // 重新渲染最后一条消息（修正缩进和格式）
-            const lastMessageElement = this._messageContainer.lastElementChild;
+            const lastMessageElement = this._messageContainer.node.lastElementChild;
             if (lastMessageElement) {
               const contentElement = lastMessageElement.querySelector(
                 '.jp-sidebar-message-content'
@@ -209,7 +185,7 @@ export class SidebarWidget extends LuminoWidget {
               }
             }
             // 滚动到底部（修正缩进）
-            this._messageContainer.scrollTop = this._messageContainer.scrollHeight;
+            this._messageContainer.node.scrollTop = this._messageContainer.node.scrollHeight;
           } catch (error) {
             console.error('Error parsing message:', error);
             handleStreamError();
@@ -227,37 +203,5 @@ export class SidebarWidget extends LuminoWidget {
       // 保留 finally 作为最后的安全保障
       this._inputArea.enableSendButton();
     }
-  }
-
-  private _addMessage(message: IChatMessage): void {
-    this._messages.push(message);
-
-    const messageElement = document.createElement('div');
-    messageElement.className = `jp-sidebar-message jp-sidebar-message-${message.role}`;
-
-    const contentElement = document.createElement('div');
-    contentElement.className = 'jp-sidebar-message-content';
-
-    // 根据消息角色决定是否需要解析 Markdown
-    if (message.role === 'assistant') {
-      // 使用 markdown-it 解析内容
-      contentElement.innerHTML = this._md.render(message.content);
-
-      // 为所有链接添加新窗口打开属性
-      const links = contentElement.getElementsByTagName('a');
-      Array.from(links).forEach(link => {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener noreferrer');
-      });
-    } else {
-      // 用户消息保持纯文本
-      contentElement.textContent = message.content;
-    }
-
-    messageElement.appendChild(contentElement);
-    this._messageContainer.appendChild(messageElement);
-
-    // 滚动到底部
-    this._messageContainer.scrollTop = this._messageContainer.scrollHeight;
   }
 }
