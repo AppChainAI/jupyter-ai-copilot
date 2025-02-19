@@ -19,4 +19,4 @@ export class IconWidget extends LuminoWidget {
     iconWidget.node.setAttribute('height', `${size}px`);
     return iconWidget;
   }
-} 
+}

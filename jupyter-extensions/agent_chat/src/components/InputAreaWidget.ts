@@ -129,15 +129,25 @@ export class InputAreaWidget extends LuminoWidget {
 
     // 使用requestAnimationFrame等待样式应用
     requestAnimationFrame(() => {
-      const computedColor = getComputedStyle(this._input, '::placeholder').color;
-      // 如果颜色仍不匹配，强制设置内联样式
+      const computedColor = getComputedStyle(
+        this._input,
+        '::placeholder'
+      ).color;
+
       if (computedColor !== 'rgb(96, 96, 96)') {
-        this._input.style.setProperty('--placeholder-color', 'rgb(96, 96, 96)', 'important');
+        this._input.style.setProperty(
+          '--placeholder-color',
+          'rgb(96, 96, 96)',
+          'important'
+        );
       }
     });
 
     // 在输入框初始化后添加
-    this._input.setAttribute('data-placeholder-color', 'var(--jp-ui-font-color2)');
+    this._input.setAttribute(
+      'data-placeholder-color',
+      'var(--jp-ui-font-color2)'
+    );
   }
 
   private handleSend(): void {

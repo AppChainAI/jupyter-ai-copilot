@@ -22,7 +22,9 @@ export class SidebarWidget extends LuminoWidget {
     this._messageContainer = new MessageContainerWidget();
 
     // 创建输入区域组件
-    this._inputArea = new InputAreaWidget((content: string) => this.handleSendRequest(content));
+    this._inputArea = new InputAreaWidget(
+      (content: string) => this.handleSendRequest(content)
+    );
 
     // 组装界面
     this.node.appendChild(this._messageContainer.node);
@@ -108,7 +110,9 @@ export class SidebarWidget extends LuminoWidget {
 
     const appendToMessage = (chunk: string) => {
       if (tempMessage) {
-        const content = tempMessage.querySelector('.jp-sidebar-message-content');
+        const content = tempMessage.querySelector(
+          '.jp-sidebar-message-content'
+        );
         if (content) {
           content.textContent += chunk;
         }
@@ -123,7 +127,8 @@ export class SidebarWidget extends LuminoWidget {
       // 当前 jupyterlab 的 url
       // 如果 jupyterlab 是部署在本地，则使用 127.0.0.1:8888
       // 如果 jupyterlab 是部署在Docker，则使用 jupyter-ai-extensions:8888
-      const jupyterlab_url = PageConfig.getOption('JUPYTERLAB_URL') || 'http://127.0.0.1:8888';
+      const jupyterlab_url = PageConfig.getOption('JUPYTERLAB_URL') 
+        || 'http://127.0.0.1:8888';
       // 准备请求数据
       const requestData = {
         server_url: jupyterlab_url,
@@ -133,7 +138,8 @@ export class SidebarWidget extends LuminoWidget {
       };
 
       // 获取 AI 代理 URL
-      const url = PageConfig.getOption('AI_AGENT_URL') || 'http://127.0.0.1:8000/ai/agent/prompt';
+      const url = PageConfig.getOption('AI_AGENT_URL') 
+        || 'http://127.0.0.1:8000/ai/agent/prompt';
       // 发送请求
       await fetchEventSource(url, {
         method: 'POST',
@@ -166,7 +172,10 @@ export class SidebarWidget extends LuminoWidget {
               const jsonContent = JSON.parse(contentValue);
               if (jsonContent.cell_content) {
                 // 处理代码单元格内容
-                const cellContent = jsonContent.cell_content.replace(/\\n/g, '\n');
+                const cellContent = jsonContent.cell_content.replace(
+                  /\\n/g,
+                  '\n'
+                );
                 handleStreamData(cellContent);
               } else {
                 // JSON 对象但不是代码单元格
@@ -184,7 +193,9 @@ export class SidebarWidget extends LuminoWidget {
                 '.jp-sidebar-message-content'
               );
               if (contentElement) {
-                contentElement.innerHTML = this._md.render(tempMessage?.textContent || '');
+                contentElement.innerHTML = this._md.render(
+                  tempMessage?.textContent || ''
+                );
                 // 为所有链接添加新窗口打开属性
                 const links = contentElement.getElementsByTagName('a');
                 Array.from(links).forEach(link => {
