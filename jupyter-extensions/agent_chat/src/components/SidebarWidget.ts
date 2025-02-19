@@ -169,17 +169,20 @@ export class SidebarWidget extends LuminoWidget {
       const currentNotebook = this._notebookTracker.currentWidget;
       const path = currentNotebook?.context.localPath || '';
 
+      // 当前 jupyterlab 的 url
+      // 如果 jupyterlab 是部署在本地，则使用 127.0.0.1:8888
+      // 如果 jupyterlab 是部署在Docker，则使用 jupyter-ai-extensions:8888
+      const jupyterlab_url = PageConfig.getOption('JUPYTERLAB_URL') || 'http://127.0.0.1:8888';
       // 准备请求数据
       const requestData = {
-        server_url: 'http://jupyter-ai-extensions:8888',
+        server_url: jupyterlab_url,
         token: PageConfig.getToken(),
         path: path,
         input: content
       };
 
       // 获取 AI 代理 URL
-      const url = PageConfig.getOption('AI_AGENT_URL') || 
-        'http://127.0.0.1:8000/ai/agent/stream-prompt';
+      const url = PageConfig.getOption('AI_AGENT_URL') || 'http://127.0.0.1:8000/ai/agent/prompt';
       // 发送请求
       await fetchEventSource(url, {
         method: 'POST',
